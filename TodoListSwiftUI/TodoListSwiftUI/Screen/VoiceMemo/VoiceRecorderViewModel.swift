@@ -9,8 +9,10 @@ import Foundation
 
 
 class VoiceRecorderViewModel: ObservableObject, AudioPlayerManagerDelegate {
-    private let recordManager: RecordManager = RecordManager()
-    private let audioManager: AudioPlayerManager = AudioPlayerManager()
+    //녹음 관련을 관리하는 매니저 (RecordManager을 참조중)
+    private let recordManager: RecordManager = RecordManager.shared
+    //녹음파일 재생 관련을 관리하는 매니저 (AudioPlayerManager을 참조중)
+    private let audioManager: AudioPlayerManager = AudioPlayerManager.shared
     //음성메모 삭제할 때 나타나는 Alert의 값
     @Published var isDisplayRemoveVoiceRecorderAlert: Bool = false
     //파일을 가져오거나 실패할 때 Alert 띄우기 위한 값
@@ -26,8 +28,12 @@ class VoiceRecorderViewModel: ObservableObject, AudioPlayerManagerDelegate {
     @Published var isPaused: Bool = false
     //얼마나 플레이 되었는지
     @Published var playedTime: TimeInterval = 0
+    //리코드 타이머
+    private var recordTimer: Timer?
     //프로그래스 바 타이머
     private var progressTimer: Timer?
+    //녹음 몇초 되었는지 저장하기 위한 변수
+    @Published var recordPlayedTime: TimeInterval = 0
     
     //녹음 파일들
     var recordedFiles: [Recording] = []
@@ -96,21 +102,46 @@ extension VoiceRecorderViewModel {
             do {
                 try recordManager.startRecording(recordedFiles.count + 1)
                 self.isRecording = true
+                startRecordTimer()
             } catch {
                 displayAlert(message: "음성 녹음에 실패하였습니다.")
             }
         }
         else if isRecording {
-            recordedFiles.append(recordManager.stopRecording())
-            self.isRecording = false
+            endRecord()
         } else {
             do {
                 try recordManager.startRecording(recordedFiles.count + 1)
                 self.isRecording = true
+                startRecordTimer()
             } catch {
                 displayAlert(message: "음성 녹음에 실패하였습니다.")
             }
         }
+    }
+    
+    func endRecord() {
+        recordedFiles.append(recordManager.stopRecording())
+        self.isRecording = false    //녹음중 변수 false
+        self.recordPlayedTime = 0   //이전에 있던 녹음 초 데이터 삭제
+        self.recordTimer = nil      //타이머 삭제
+    }
+   
+    
+    //1초마다 recordPlayedTime값을 업데이트하는 메서드
+    func updateCurrentRecordTime() {
+        self.recordPlayedTime = recordManager.updateCurrentRecordTime()
+    }
+    
+    //녹음 타이머 생성 후 실행하는 메서드
+    private func startRecordTimer() {
+        recordTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: { _ in
+            self.updateCurrentRecordTime()
+        })
+    }
+    
+    private func stopRecordTimer() {
+        recordTimer?.invalidate()
     }
 }
 

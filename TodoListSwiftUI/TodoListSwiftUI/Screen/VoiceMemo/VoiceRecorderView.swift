@@ -9,7 +9,7 @@ import SwiftUI
 
 struct VoiceRecorderView: View {
     
-    @StateObject private var voiceViewModel: VoiceRecorderViewModel = VoiceRecorderViewModel()
+    @ObservedObject var voiceViewModel: VoiceRecorderViewModel
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -36,6 +36,8 @@ struct VoiceRecorderView: View {
                isPresented: $voiceViewModel.isDisplayAlert) {
             Button("확인", role:.cancel) {}
         }
+       
+        
     }
 }
 
@@ -86,7 +88,7 @@ private struct VoiceRecorderListView: View {
 
 private struct VoiceRecorderCellView: View {
     @ObservedObject private var voiceViewModel: VoiceRecorderViewModel
-   
+    
     private var recordedFile:Recording
     private var progressBarValue: Float {
         if voiceViewModel.selectedRecoredFile == recordedFile && (voiceViewModel.isPlaying || voiceViewModel.isPaused) {
@@ -227,25 +229,30 @@ private struct ProgressBar: View {
 }
 
 private struct VoiceCreateBtn: View {
-    @ObservedObject private var voiceViewModel: VoiceRecorderViewModel
-    init(voiceViewModel: VoiceRecorderViewModel) {
-        self.voiceViewModel = voiceViewModel
-    }
+    @ObservedObject var voiceViewModel: VoiceRecorderViewModel
+    
+    
     fileprivate var body: some View {
-        Button {
-            voiceViewModel.recordBtnTapped()
-        } label: {
-            Image(voiceViewModel.isRecording ? "mic_recording" : "mic")
-                .font(.title.weight(.semibold))
-                .padding()
-                
-                .clipShape(.circle)
-                .padding(.trailing, 20)
-                .padding(.bottom, 15)
+        VStack(alignment: .center) {
+            if voiceViewModel.isRecording {
+                Text("\(voiceViewModel.recordPlayedTime.formattedTimeInterval)")
+                    .font(.system(size: 16, weight: .bold))
+                    .padding(.trailing, 20)
+            }
+            
+            Button {
+                voiceViewModel.recordBtnTapped()
+            } label: {
+                Image(systemName: "mic.fill")
+                    .font(.title.weight(.semibold))
+                    .foregroundStyle(voiceViewModel.isRecording ? .red : .green)
+                    .padding()
+                    .clipShape(.circle)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 15)
+            }
         }
     }
 }
 
-#Preview {
-    VoiceRecorderView()
-}
+

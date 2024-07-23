@@ -36,5 +36,5 @@ struct CalendarTodoView: View {
 }
 
 #Preview {
-    CalendarTodoView(todoViewModel: TodoViewModel(todoRepository: TodoRepository(viewContext: DataController.shared.viewContext)))
+    CalendarTodoView(todoViewModel: TodoViewModel())
 }

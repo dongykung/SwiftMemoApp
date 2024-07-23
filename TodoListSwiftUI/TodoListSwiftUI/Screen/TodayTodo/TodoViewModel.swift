@@ -11,9 +11,9 @@ class TodoViewModel: ObservableObject {
     @Published var todoList: [Todo] = []
     @Published var calendarTodoList: [Todo] = []
     @Published var selectedDate: Date = Date()
-    private let todoRepository: TodoRepository
-    init(todoRepository: TodoRepository) {
-        self.todoRepository = todoRepository
+    private let todoRepository: TodoRepository = TodoRepository.shared
+    
+    init() {
         fetchTodayTodos(date: Date())
         fetchDateTodos(date: Date())
         print("뷰모델 init")

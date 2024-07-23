@@ -10,7 +10,9 @@ import SwiftUI
 struct HomeView: View {
     
     
-    @StateObject private var todoViewModel = TodoViewModel(todoRepository: TodoRepository(viewContext: DataController.shared.viewContext))
+    @StateObject private var todoViewModel = TodoViewModel()
+    
+    @StateObject private var voiceViewModel: VoiceRecorderViewModel = VoiceRecorderViewModel()
     @State private var selectedIndex: Int = 0
     
     var body: some View {
@@ -34,7 +36,7 @@ struct HomeView: View {
             .tag(1)
             
             NavigationStack {
-                VoiceRecorderView()
+                VoiceRecorderView(voiceViewModel: voiceViewModel)
             }
             .tabItem { Label(
                 title: { Text("Voice") },

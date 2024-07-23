@@ -130,6 +130,6 @@ private struct CreateTodoDateView: View {
 #Preview {
   
     CreateTodoModal(
-        todoViewModel: TodoViewModel(todoRepository: TodoRepository(viewContext: DataController.shared.viewContext)), showModal: .constant(false)
+        todoViewModel: TodoViewModel(), showModal: .constant(false)
     )
 }

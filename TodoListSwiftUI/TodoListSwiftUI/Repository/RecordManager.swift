@@ -8,6 +8,7 @@
 import Foundation
 import AVFoundation
 
+/// 녹음하다 실패할 때 던질 에러명시
 enum FileManagerError: Error {
     case sessionError
     case deleteError
@@ -17,11 +18,13 @@ enum FileManagerError: Error {
     case fileTimeError
 }
 
+//녹음에 관련된 메서드들을 관리하는 매니저
 class RecordManager: NSObject {
     
     private var audioRecorder: AVAudioRecorder? //녹음 인스턴스
     private(set) var recordings: [Recording] = []  //녹음 목록
     
+    static let shared: RecordManager = RecordManager()
     
     override init() {
         super.init()
@@ -59,6 +62,13 @@ class RecordManager: NSObject {
             throw FileManagerError.recordError
         }
     }
+    
+    //녹음 일시정지 메서드
+    func pauseRecording() {
+        audioRecorder?.pause()
+    }
+    
+    
     
     
     //녹음 종료 메서드
@@ -123,8 +133,8 @@ class RecordManager: NSObject {
         return recordings
     }
     
-    
-    
-    //녹음 재생
+    func updateCurrentRecordTime() -> TimeInterval {
+        return audioRecorder?.currentTime ?? 0
+    }
     
 }

@@ -17,6 +17,8 @@ class AudioPlayerManager: NSObject, AVAudioPlayerDelegate {
     weak var delegate: AudioPlayerManagerDelegate?
     private var audioPlayer: AVAudioPlayer?  //재생 인스턴스
     
+    static let shared: AudioPlayerManager = AudioPlayerManager()
+    
     //오디오 재생 메서드
     func startPlaying(url: URL) throws {
         let playSession = AVAudioSession.sharedInstance()
