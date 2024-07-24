@@ -19,11 +19,15 @@ class VoiceRecorderViewModel: ObservableObject, AudioPlayerManagerDelegate {
     @Published var isDisplayAlert: Bool = false
     //에러 알림창 메시지 값
     @Published var alertMessage: String = ""
+    //녹음 종류 후 녹음 파일 제목 입력하게 하는 부분
+    @Published var setRecordTitleModal: Bool = false
     
     //현재 녹음 중?
     @Published var isRecording: Bool = false
     //현재 플레잉 중인지?
     @Published var isPlaying: Bool = false
+    //현재 녹음 일시 정지 상태인지?
+    @Published var isRecordPause: Bool = false
     //지금 정지상태인지?
     @Published var isPaused: Bool = false
     //얼마나 플레이 되었는지
@@ -102,14 +106,20 @@ extension VoiceRecorderViewModel {
             do {
                 try recordManager.startRecording(recordedFiles.count + 1)
                 self.isRecording = true
+                //TODO: dd
                 startRecordTimer()
             } catch {
                 displayAlert(message: "음성 녹음에 실패하였습니다.")
             }
         }
         else if isRecording {
-            endRecord()
-        } else {
+            if isRecordPause {
+                resumeRecord()
+            } else {
+                pauseRecord()
+            }
+        }
+        else {
             do {
                 try recordManager.startRecording(recordedFiles.count + 1)
                 self.isRecording = true
@@ -120,11 +130,36 @@ extension VoiceRecorderViewModel {
         }
     }
     
-    func endRecord() {
-        recordedFiles.append(recordManager.stopRecording())
+    func saveRecordBtnTapped() {
+        pauseRecord()
+        self.setRecordTitleModal = true
+    }
+    
+    func pauseRecord() {
+        self.isRecordPause = true
+        stopRecordTimer()
+        recordManager.pauseRecording()
+    }
+    
+    func resumeRecord() {
+        self.isRecordPause = false //녹음 정지되었니? = false
+        startRecordTimer() //다시 타이머 작동
+        recordManager.resumeRecording() //다시 녹음 시작
+    }
+    
+    func setRecordTitleShow() {
+        self.isRecordPause = true //녹음 정지 중이니? = true
+        self.setRecordTitleModal = true //녹음 타이틀 모달 보이게하기
+        stopRecordTimer() //타이머 잠시 스탑
+    }
+    
+    //녹음 종료 메서드
+    func endRecord(_ title: String) {
+        recordedFiles.append(recordManager.stopRecording(title))
         self.isRecording = false    //녹음중 변수 false
         self.recordPlayedTime = 0   //이전에 있던 녹음 초 데이터 삭제
         self.recordTimer = nil      //타이머 삭제
+        self.isRecordPause = false
     }
    
     
@@ -143,6 +178,7 @@ extension VoiceRecorderViewModel {
     private func stopRecordTimer() {
         recordTimer?.invalidate()
     }
+    
 }
 
 //MARK: 음성메모 재생 관련
