@@ -41,7 +41,7 @@ class RecordManager: NSObject {
             throw FileManagerError.sessionError
         }
         //파일 저장을 위한 파일 이름
-        let fileURL = getDocumentsDirectory().appendingPathComponent("새로운 녹음 \(count)")
+        let fileURL = getDocumentsDirectory().appendingPathComponent("\(UUID().uuidString)")
         //녹음 셋팅 딕셔너리
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -68,15 +68,40 @@ class RecordManager: NSObject {
         audioRecorder?.pause()
     }
     
+    //녹음 재개 메서드
+    func resumeRecording() {
+        audioRecorder?.record()
+    }
     
     
     
     //녹음 종료 메서드
-    func stopRecording() -> Recording {
+    func stopRecording(_ title: String) -> Recording {
+        let newFileName = title.isEmpty ? Date().formattedVoiceRecorderTime : title
+        
+        var newFileURL = getDocumentsDirectory().appendingPathComponent("\(newFileName).m4a")
+        
+        var counter = 1
+        
+        while FileManager.default.fileExists(atPath: newFileURL.path) {
+               let duplicatedFileName = "\(newFileName) (\(counter))"
+               newFileURL = getDocumentsDirectory().appendingPathComponent("\(duplicatedFileName).m4a")
+               counter += 1
+           }
+        
+        
         audioRecorder?.stop()
         let url = audioRecorder!.url
-        let (createDate, duration) = getFileInfo(for: url)
-        return Recording(fileURL: url, createdDate: createDate, duration: duration)
+        do {
+               // 임시 URL에서 최종 URL로 파일을 이동시킵니다.
+               try FileManager.default.moveItem(at: url, to: newFileURL)
+               // 파일 이동 후 필요한 후속 처리를 수행할 수 있습니다. (예: 레코딩 목록 업데이트)
+           } catch {
+               // 파일 이동에 실패한 경우 에러 메시지를 출력합니다.
+               print("Error saving recording: \(error)")
+           }
+        let (createDate, duration) = getFileInfo(for: newFileURL)
+        return Recording(fileURL: newFileURL, createdDate: createDate, duration: duration)
     }
     
     
