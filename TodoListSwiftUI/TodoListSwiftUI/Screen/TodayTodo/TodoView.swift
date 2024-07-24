@@ -171,7 +171,7 @@ struct CreateTodoBtn: View {
 
 struct TodoListView_PreView: PreviewProvider {
     static var previews: some View {
-        let dataController = DataController.shared
+       
         @StateObject var todoViewModel = TodoViewModel()
         NavigationStack {
             TodoView(todoViewModel: todoViewModel)
