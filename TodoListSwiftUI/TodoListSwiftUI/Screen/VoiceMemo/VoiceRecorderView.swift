@@ -36,8 +36,11 @@ struct VoiceRecorderView: View {
                isPresented: $voiceViewModel.isDisplayAlert) {
             Button("확인", role:.cancel) {}
         }
-       
-        
+               .sheet(isPresented: $voiceViewModel.setRecordTitleModal){
+                   SetRecordTextModal(recordModalVisible:$voiceViewModel.setRecordTitleModal,
+                                      voiceViewModel: voiceViewModel)
+                   .presentationDetents([.fraction(0.15)])
+               }
     }
 }
 
@@ -234,22 +237,41 @@ private struct VoiceCreateBtn: View {
     
     fileprivate var body: some View {
         VStack(alignment: .center) {
-            if voiceViewModel.isRecording {
-                Text("\(voiceViewModel.recordPlayedTime.formattedTimeInterval)")
-                    .font(.system(size: 16, weight: .bold))
-                    .padding(.trailing, 20)
+            HStack {
+                if voiceViewModel.isRecording {
+                    Text("\(voiceViewModel.recordPlayedTime.formattedTimeInterval)")
+                        .font(.system(size: 16, weight: .bold))
+                        .padding(.trailing, 20)
+                        .animation(.easeIn, value: voiceViewModel.isRecording)
+                }
             }
             
-            Button {
-                voiceViewModel.recordBtnTapped()
-            } label: {
-                Image(systemName: "mic.fill")
-                    .font(.title.weight(.semibold))
-                    .foregroundStyle(voiceViewModel.isRecording ? .red : .green)
-                    .padding()
-                    .clipShape(.circle)
-                    .padding(.trailing, 20)
-                    .padding(.bottom, 15)
+            HStack {
+                Button {
+                    withAnimation {
+                        voiceViewModel.recordBtnTapped()
+                    }
+                } label: {
+                    Image(systemName: "mic.fill")
+                        .font(.title.weight(.semibold))
+                        .foregroundStyle(voiceViewModel.isRecordPause ? .green : .red)
+                        .padding()
+                        .clipShape(.circle)
+                        .padding(.bottom, 15)
+                }
+                if voiceViewModel.isRecording {
+                    Button {
+                        withAnimation {
+                            voiceViewModel.saveRecordBtnTapped()
+                        }
+                    } label: {
+                        Image(systemName: "square.and.arrow.down.fill")
+                            .font(.title.weight(.semibold))
+                            .padding()
+                            .clipShape(.circle)
+                            .padding(.bottom, 15)
+                    }
+                }
             }
         }
     }
